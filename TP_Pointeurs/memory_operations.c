@@ -1,20 +1,19 @@
 #include "memory_operations.h"
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
 void *my_memcpy(void *dst, const void *src, size_t len) {
-    for(int i = 0; i < len-1; i++){
-        dst[i] = src[i];
-    }
+    memcpy(dst, src, len);
 }
 
 void *my_memmove(void *dst, const void *src, size_t len) {
-    my_memcpy(*dst, *src, len);
+    memmove(dst, src, len);
 }
 
 int is_little_endian() {
-    unsigned int x = 1;
-    return (int) (((char*)&x)[0]);
+    int n = 0x1;
+    return (*(char *)&n);
 }
 
 int reverse_endianess(int value) {
