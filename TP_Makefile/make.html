@@ -1,0 +1,424 @@
+<html><head>
+<title>Make</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+</head>
+<body>
+<center><h1>TP de Programmation : make</h1></center>
+<h3>Construction d'un projet logiciel</h3>
+
+<p>
+Ce TP, suppose un connaissance basique de la compilation séparée et de l'outil
+<tt>make</tt>. Si ce n'est pas votre cas, vous pouvez consulter
+<a href="https://im2ag-moodle.e.ujf-grenoble.fr/pluginfile.php/35920/mod_resource/content/2/make.html">cette page</a> de rappels.
+</p>
+
+<h4>1 - Piles</h4>
+
+<p>Dans les fichiers <a href="https://im2ag-moodle.e.ujf-grenoble.fr/pluginfile.php/35920/mod_resource/content/2/pile.c">pile.c</a> et <a href="https://im2ag-moodle.e.ujf-grenoble.fr/pluginfile.php/35920/mod_resource/content/2/pile_io.c">pile_io.c</a> se trouve l'implémentation de fonctions
+respectivement de gestion et d'affichage d'une pile.  Dans le fichier <a href="https://im2ag-moodle.e.ujf-grenoble.fr/pluginfile.php/35920/mod_resource/content/2/essai_pile.c">essai_pile.c</a> se trouve un programme utilisant des
+piles.  La description des fonctions de <tt>pile.c</tt> et <tt>pile_io.c</tt>
+est la suivante :
+
+</p><pre>/*
+   pile_vide
+   description : construit une pile vide
+   parametres : aucun
+   valeur de retour : une pile vide
+   effets de bord : aucun
+*/
+
+/*
+   detruire_pile
+   description : detruit une pile
+   parametres : une pile a detruire
+   valeur de retour : aucune
+   effets de bord : la pile passee en parametre n'est plus utilisable
+*/
+
+/*
+   empiler
+   description : ajoute une donnee au sommet de la pile
+   parametres : donnee a ajouter, pile sur laquelle on ajoute
+   valeur de retour : la pile avec la donnee en plus
+   effets de bord : la pile passee en parametre n'est plus utilisable
+                    (sinon perte de coherence du chainage)
+*/
+
+/*
+   sommet
+   description : retourne la valeur de l'element au sommet de la pile ou 0 si
+                 la pile est vide
+   parametres : pile
+   valeur de retour : valeur du sommet de la pile
+   effets de bord : aucun
+*/
+
+/*
+   depiler
+   description : supprime le sommet de la pile
+   parametres : pile dans laquelle on souhaite depiler
+   valeur de retour : la pile avec son sommet en moins
+   effets de bord : la pile passee en parametre n'est plus utilisable
+*/
+
+/*
+   est_pile_vide
+   description : retourne 1 si la pile passee en parametre est vide
+   parametres : pile
+   valeur de retour : 1 si la pile passee en parametre est vide, 0 sinon
+   effets de bord : aucun
+*/
+
+/*
+   afficher_pile
+   description : affiche le contenu d'une pile verticalement
+   parametres : pile
+   valeur de retour : aucune
+   effets de bord : affiche de informations a l'ecran
+*/
+</pre>
+
+<b>Questions :</b>
+<ul>
+<li>écrivez les fichiers d'entête correspondants à <tt>pile.c</tt> et
+<tt>pile_io.c</tt>.
+<b>Indice :</b> aidez vous de la fonction <tt>empiler</tt> pour retrouver le
+type correspondant à <tt>pile</tt>. Les lignes correspondant à l'allocation
+mémoire et à l'initialisation des champs permettent de retrouver la structure
+suivante :<br>
+<center><img src="make_fichiers/pile.gif"></center><br>
+</li>
+<li>compilez l'ensemble des fichiers source pour créer un programme
+exécutable essai_pile et jouez un peu avec</li>
+</ul>
+
+<h4>2 - Makefiles</h4>
+
+<p>Écrivez un <tt>Makefile</tt> simple (sans règles implicites ou génériques et
+sans variables) vous permettant de compiler l'ensemble du projet en utilisant
+l'utilitaire <tt>make</tt>. Pour écrire les dépendances, vous pouvez vous servir de <tt>gcc</tt> de la
+manière suivante :
+</p><pre>gcc -MM fichier_source.c</pre>
+ce qui permet de calculer automatiquement la ligne de dépendance décrivant la fabricaton de
+<tt>fichier_source.o</tt>.<p></p>
+<p><b>Remarque :</b>
+Par la suite le terme "dépendances" désigne les lignes contenant une cible et ses prérequis séparés par
+deux points, le terme "commandes" désigne les lignes contenant les commandes à exécuter pour reconstruire
+la cible et le terme "règle" designe l'ensemble dependances + commandes  associé à une cible.</p>
+Vérifiez le bon fonctionnement de votre <tt>Makefile</tt> de la manière suivante :
+<ul>
+<li>compilez essai_pile en tapant <tt>make essai_pile</tt></li>
+<li>utilisez la commande <tt>touch</tt> pour modifier certains fichiers et recompilez
+avec <tt>make essai_pile</tt></li> en vérifiant que exactement tout ce qui est nécessaire
+et suffisant à la reconstruction de <tt>essai_pile</tt> a été fait.
+A titre d'exemple :
+<ul>
+<li><tt>touch pile.h</tt> suivi de <tt>make essai_pile</tt> provoque la recompilation de tous
+les fichiers</li>
+<li><tt>touch pile.c</tt> suivi de <tt>make essai_pile</tt> provoque la recompilation de
+<tt>pile.o</tt> et l'édition de liens créant <tt>essai_pile</tt></li>
+</ul>
+</ul>
+
+<h4>3 - Variables</h4>
+
+<p>
+Si nous imaginons que des parties du processus de construction de notre
+programme sont amenées à changer, par exemple on change de compilateur
+(compilateur intel au lieu de gcc pour profiter des optimisations SSE), il
+faut changer toutes les lignes
+de compilation présentes dans le Makefile... La solution pour éviter ce genre
+de problèmes est d'utiliser
+des variables pour stocker des informations utilisées souvent dans le Makefile,
+comme le compilateur à utiliser.
+Un autre exemple concerne les options de compilation qui peuvent être fixées de
+manière centralisée.
+</p>
+
+<p>
+La syntaxe est simple :
+</p><ul>
+<li>définition :
+<pre>NOM=valeur (avec espaces et tout jusqu'a la fin de la ligne)
+</pre>
+</li>
+<li>utilisation :
+<pre>$(NOM)
+</pre>
+</li>
+</ul>
+Voici un exemple de <tt>Makefile</tt> permettant de compiler un programme constitué de 3 fichiers, un fichier
+<tt>principal.c</tt> contenant le <tt>main</tt> et deux fichiers <tt>module.h</tt> et <tt>module.c</tt>
+constituant le fichier d'entête et l'implémentation d'un module utilisé par le programme :
+<pre>CC=gcc
+CFLAGS=-Wall -Werror
+
+programme: principal.o module.o
+	$(CC) -o programme principal.o module.o
+
+principal.o: principal.c module.h
+	$(CC) $(CFLAGS) -c principal.c
+
+module.o: module.c module.h
+	$(CC) $(CFLAGS) -c module.c
+</pre>
+Les noms de variables pris ici sont standard (comme nous allons le voir ensuite, ils s'accordent bien
+avec les règles implicites).
+<p></p>
+
+<p>
+<b>Remarque :</b> il existe aussi des variables speciales utilisables dans la partie commande d'une règle
+</p><ul>
+<li>$@ : la cible
+</li>
+<li>$&lt; : le premier fichier des dependances
+</li>
+<li>$^ : tous les fichiers des dependances
+</li>
+</ul>
+Notre exemple précédent peut donc aussi s'écrire :
+<pre>CC=gcc
+CFLAGS=-Wall -Werror
+
+programme: principal.o module.o
+	$(CC) -o $@ $^
+
+principal.o: principal.c module.h
+	$(CC) $(CFLAGS) -c $&lt;
+
+module.o: module.c module.h
+	$(CC) $(CFLAGS) -c $&lt;
+</pre>
+<p></p>
+
+<p>
+<b>Question :</b>
+</p>
+
+<p>Modifiez les règles de compilation de votre <tt>Makefile</tt> afin d'utiliser
+des variables (que nous appellerons respectivement CC et CFLAGS)
+pour stocker le nom de la commande de compilation et les arguments qu'elle
+utilise pour la traduction (fabrication des <tt>.o</tt>). Utilisez ces
+variables dans vos règles de compilation et testez que le résultat fonctionne
+bien comme avant.
+</p>
+
+<h4>4 - Règles génériques</h4>
+
+<p>
+Dans l'exemple précédent, nous pouvons remarquer que les deux règles décrivant la
+fabrication des <tt>.o</tt> se ressemblent énormément : la partie commande est la même
+et les parties dépendances ont la même structure. Il serait intéressant de
+pouvoir factoriser ces deux parties du <tt>Makefile</tt> en écrivant une ligne de
+dépendances plus générique, quelque chose du genre : "<em>pour fabriquer un fichier
+<tt>.o</tt>, le fichier <tt>.c</tt> de même nom est nécéssaire</em>".
+</p>
+
+<p>
+Ceci est possible à l'aide du caractère <tt>%</tt> qui, sur une ligne de dépendance,
+désigne un unique motif arbitraire, éventuellement présent à plusieurs endroits sur la
+ligne. Lorsqu'il recherche à fabriquer une cible donnée, <tt>make</tt> commence par
+rechercher une règle contenant littéralement le nom de la cible. S'il n'en trouve pas
+il recherche alors à remplacer le motif générique des règles générique afin d'obtenir
+le nom de la cible. Dans notre exemple précédent, cela donnerait :
+</p><pre>CC=gcc
+CFLAGS=-Wall -Werror
+
+programme: principal.o module.o
+	$(CC) -o $@ $^
+
+%.o: %.c module.h
+	$(CC) $(CFLAGS) -c $&lt;
+</pre>
+<p></p>
+
+<p>
+Nous pouvons remarquer que ce genre de règle ne s'applique pas dans tous les cas :
+de manière générale les différents <tt>.o</tt> ne dépendent pas tous des même fichiers
+d'entête. Heureusement, <tt>make</tt> nous autorise à décrire les dépendances relatives à
+une cible sur plusieurs lignes de dépendances qui peuvent être présentes partout dans le
+<tt>Makefile</tt>. La seule contrainte est qu'une cible doit avoir au plus une règle
+complète (avec la partie commande) la décrivant. Notre exemple précédent devient alors :
+</p><pre>CC=gcc
+CFLAGS=-Wall -Werror
+
+programme: principal.o module.o
+	$(CC) -o $@ $^
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $&lt;
+
+principal.o: module.h
+module.o: module.h
+</pre>
+Cette fois-ci, la règle décrivant la fabrication des <tt>.o</tt> est vraiment générique.
+<p></p>
+
+<p>
+<b>Question :</b>
+</p>
+
+<p>réécrivez en une règle générique vos règles de fabrication des <tt>.o</tt>
+et ajoutez au Makefile les dépendances absentes de cette règle générique.
+Bien sur, pensez à tester le résultat.
+</p>
+
+<h4>5 - Règles implicites</h4>
+
+<p>La manière de compiler des programmes étant toujours la même, l'utilitaire
+<tt>make</tt> contient un grand nombre de règles définies par
+défaut pour la fabrication de toute sorte de cibles (on parle de règles
+implicites).  En particulier la compilation de fichiers objets (<tt>.o</tt>) à
+partir d'un programme source en C (<tt>.c</tt>) fait partie des règles définies
+par défaut.
+</p>
+
+<p>Il est aussi possible d'utiliser <tt>make</tt> en lui interdisant d'utiliser
+ses règles par défaut avec l'option <tt>-r</tt> ou bien de lui demander
+d'afficher le détail du processus de reconstruction avec l'option <tt>-d</tt>
+(pour debug).  Pour répondre aux questions suivantes, vous pouvez jouer avec
+ces deux options et constater les variantes selon la présence ou non de règles
+complètes pour la fabrication des <tt>.o</tt> et de règles <tt>.PHONY</tt>.  En
+particulier vous pouvez essayer les commandes suivantes :
+</p><ul>
+<li><tt>rm essai_pile *.o; make -d</tt></li>
+<li><tt>rm essai_pile *.o; make -rd</tt></li>
+</ul>
+<p></p>
+
+<b>Questions :</b>
+<ul>
+<li>renommez votre fichier <tt>Makefile</tt> (en <tt>toto</tt> par exemple),
+effacez le fichier <tt>essai_pile</tt> et tous les <tt>.o</tt>, puis
+saisissez la commande :
+<pre>make essai_pile
+</pre>
+Comment interprétez vous le résultat ? Qu'essaie de faire <tt>make</tt> ?
+</li>
+<li>créez un nouveau fichier <tt>Makefile</tt> contenant uniquement la ligne
+de dépendances décrivant l'édition de liens.
+Testez le Makefile obtenu : quelles options <tt>make</tt> utilise-t-il pour
+compiler ? Les dépendances sont-elles gérées correctement ? <tt>make</tt> se
+comporte-t-il toujours correctement si vous utilisez l'option <tt>-r</tt> après
+avoir effacé <tt>essai_pile</tt> et tous les <tt>.o</tt> ?
+</li>
+<li>retrouvez la règle implicite utilisée par <tt>make</tt> pour fabriquer les
+<tt>.o</tt> (mais sans l'ajouter à votre Makefile). Utilisez ensuite la
+variable appropriée pour compiler avec les
+options <tt>-Wall -Werror</tt>. Ajoutez les lignes de dépendance manquantes et
+vérifiez que tout fonctionne correctement.
+</li>
+</ul>
+
+<h4>6 - Quelques fonctions</h4>
+
+<p>Les règles interprétées par <tt>make</tt> ne sont pas nécessairement
+statiques : il est possible de demander à make d'effectuer un
+traitement (via l'appel de fonctions prédéfinies) permettant de déterminer
+quelles sont les dépendances à prendre en compte.
+Par exemple, il est possible pour make de demander au shell des informations
+concernant le système de fichiers, comme la liste des fichiers <tt>.c</tt> du
+répertoire courant :<br>
+<tt>$(wildcard *.c)</tt><br>
+ou bien<br>
+<tt>$(shell ls *.c)</tt><br>
+Ces fonctions proposées par <tt>make</tt> sont utilisable dans les affectations
+de variables ou dans la partie dépendances d'une règle.
+Grâce à ce genre de fonctions, il est possible d'écrire une règle permettant de
+produire un programme à partir de tous les fichiers <tt>.c</tt> du répertoire
+courant :<br>
+</p><pre>prog: $(wildcard *.c)
+	gcc -o $@ $^
+</pre>
+<p></p>
+
+<p>
+L'inconvénient de ce genre de règle est que la compilation n'est plus séparée.
+En pratique, il serait plus utile de pouvoir dire à make que notre programme
+s'obtient à partir de tous les <tt>.o</tt> obtenus en traduisant chacun des
+<tt>.c</tt> à l'aide d'une règle générique. Pour cela, nous pouvons combiner
+l'utilisation de la fonction <tt>wildcard</tt> à celle de la fonction
+<tt>patsubst</tt> qui va nous permettre de remplacer les <tt>.c</tt> par des
+<tt>.o</tt>. La fonction <tt>patsubst</tt> s'utilise de la manière suivante
+:<br>
+</p><pre>$(patsubst motif, remplacement, texte)
+</pre>
+où chaque occurence du motif dans le texte est remplacée par le remplacement
+donné. Par exemple : <tt>$(patsubst %.c, %.o, pile.c pile_io.c ...)</tt>.<p></p>
+
+<p>
+Utilisez les fonctions <tt>wildcard</tt> et <tt>patsubst</tt> pour réécrire
+la règle permettant d'effectuer l'édition de liens : au lieu de donner la liste
+des <tt>.o</tt> concernés dans cette règle, il faudra la calculer en
+considérant que tous les fichiers <tt>.c</tt> du répertoire courant font partie
+du programme.</p>
+
+<h4>7 - Inclusion</h4>
+
+<p>En plus des règles et définitions de variables, un <tt>Makefile</tt> peut
+contenir des directives comme <tt>include</tt> permettant d'inclure le contenu
+d'autres fichiers. Cela permet, par exemple, d'écrire un <tt>Makefile</tt> en
+plusieurs fichiers. Ce genre d'inclusion est assez élaboré : si le ou
+les fichiers à inclure n'existent pas, <tt>make</tt> va chercher à les
+fabriquer à l'aide de ses règles, puis va réinterpréter le <tt>Makefile</tt> en
+incluant les fichiers qu'il vient de fabriquer.</p>
+
+<p>Grâce à ce mécanisme nous allons pouvoir calculer de manière automatique les
+dépendances dans notre programme :
+</p><ul>
+<li>écrivez une règle permettant de fabriquer, à partir de chaque fichier
+<tt>.c</tt>, un fichier <tt>.dep</tt> contenant le résultat de la commande
+<tt>gcc -MM</tt>.</li>
+<li>supprimez la description des dépendances de traduction de votre
+<tt>Makefile</tt> et ajoutez y une directive permettant d'inclure tous les
+fichiers <tt>.dep</tt> associés aux fichiers <tt>.c</tt> du répertoire courant.
+Vous pouvez ajouter le caractère '-' devant le <tt>include</tt> afin de
+supprimer les message d'avertissement produits par <tt>make</tt> lorsque les
+fichiers à inclure n'existent pas.</li>
+<li>Vérifiez le fonctionnement de votre <tt>Makefile</tt> : <tt>touch
+pile.h</tt> devrait provoquer une recompilation complète, <tt>touch
+pile_io.h</tt> une recompilation d'une partie des fichiers.</li>
+</ul>
+
+<h4>8 - Autres cibles, cibles .PHONY</h4>
+
+<p>Il est parfois utile d'effectuer d'autres actions que de simplement compiler un projet. Par exemple
+lorsque nous changeons d'architecture matérielle il faut effacer toutes les parties déjà compilées
+et les recompiler (ex: en passant d'une machine Ultrasparc/Sun sous Solaris comme
+kernighan à une machine i386/PC sous linux comme mandelbrot).
+Ajoutez à votre <tt>Makefile</tt> une cible <tt>clean</tt> ne dépendant de rien et permettant
+d'effacer tous les fichiers <tt>.o</tt> ainsi que <tt>essai_pile</tt></p>
+
+<p>Le problème d'une cible <tt>clean</tt> qui ne dépend de rien est que si un fichier nommé
+<tt>clean</tt> existe dans le répertoire courant, <tt>make</tt> considère qu'il est à jour et ne fait
+rien. Verifiez ceci en exécutant <tt>touch clean</tt> puis <tt>make clean</tt>.
+Il est alors possible de préciser à <tt>make</tt> qu'une cible doit être systématiquement
+reconstruite indépendemment des dépendances en ajoutant au <tt>Makefile</tt> la ligne suivante :
+</p><pre>.PHONY: clean</pre>
+faites-le et vérifiez le bon fonctionnement de <tt>make clean</tt>.<p></p>
+
+<p>Ajoutez une règle permettant d'afficher le message suivant par défaut, c'est-à-dire lorsqu'on tape
+<tt>make</tt> tous court (rappel: la <b>première</b> règle présente dans le Makefile décrit la
+reconstruction de la cible par défaut) :
+</p><pre>Tapez l'une des commandes suivantes :
+make essai_pile
+make clean
+</pre>
+Utilisez la commande <tt>echo</tt> pour les affichages et précédez du caractère <tt>@</tt> dans le
+<tt>Makefile</tt> pour supprimer l'affichage de la commande elle-même.<p></p>
+
+<p>Pour finir, ajoutez encore une règle afin que, par défaut, la règle prise en compte fasse un clean avant
+d'afficher le message ci-dessus.
+
+</p><h4>9 - Aller plus loin (s'il reste du temps)</h4>
+
+<p>Un <tt>Makefile</tt> standard de projet logiciel devient vite très complexe
+(règles de calcul automatique des dépendances, cibles <tt>clean</tt>,
+<tt>dist</tt>, ...). Un outil appelé <tt>automake</tt> permet de générer
+automatiquement un <tt>Makefile</tt> au standard GNU pour un projet de
+développement logiciel. Il s'utilise conjointement à l'outil <tt>autoconf</tt>
+pour l'aide à la portabilité. Documentez vous sur ces outils.</p>
+
+
+
+</body></html>
