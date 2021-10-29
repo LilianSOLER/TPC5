@@ -1,14 +1,15 @@
 #ifndef __FAP_H__
 #define __FAP_H__
 
-struct maillon {
+typedef struct maillon {
 int element;
 int priorite;
 struct maillon *prochain;
-};
+} maillon;
 
 typedef struct {
-  struct maillon *tete;
+   maillon *tete;
+   int (*cmp)(int, int) ;
 } fap;
 
 /*
@@ -56,4 +57,17 @@ int est_fap_vide(fap f);
 */
 void detruire_fap(fap f);
 
+/*
+   cmp_c
+   description : compare deux priorites
+   parametres : deux priorites
+   valeur de retour : un booleen
+   effets de bord : aucun
+*/
+
+int cmp_c(int a, int b);
+int cmp_d(int a, int b);
+int cmp_0(int a, int b);
+int cmp_1(int a, int b);
+int cmp_a(int a, int b);
 #endif
